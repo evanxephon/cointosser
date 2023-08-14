@@ -1,4 +1,3 @@
-import 'dart:js_util';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -39,6 +38,52 @@ class MyApp extends StatelessWidget {
   }
 }
 
+const TextStyle uniformStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+class CheckableTask extends StatefulWidget{
+  const CheckableTask({super.key, required this.title, this.style=uniformStyle});
+  final String title;
+  final TextStyle style;
+
+  @override
+  CheckBoxState createState() => CheckBoxState();
+}
+
+class CheckBoxState extends State<CheckableTask>{
+  Icon checkBox = const Icon(Icons.check_box_outline_blank_outlined);
+  @override
+  Widget build(BuildContext context) {
+    Row content = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Text(
+        '${widget.title}:',
+        style: widget.style,
+      ),
+      FloatingActionButton(
+        onPressed: _flipCheckBox,
+        tooltip: 'Check',
+        child: checkBox,
+      ),
+    ]);
+    return content;
+  }
+
+  void _flipCheckBox() {
+    // This call to setState tells the Flutter framework that something has
+    // changed in this State, which causes it to rerun the build method below
+    // so that the display can reflect the updated values. If we changed
+    // _counter without calling setState(), then the build method would not be
+    // called again, and so nothing would appear to happen.
+    // bool coinState = _random.nextBool();
+    setState(() {
+      bool isUnchecked = (checkBox == const Icon(Icons.check_box_outline_blank_outlined));
+      IconData newIcon = isUnchecked
+          ? Icons.check_box_outlined
+          : Icons.check_box_outline_blank_outlined;
+      checkBox = Icon(newIcon);
+    });
+  }
+}
+
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -54,89 +99,134 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   IconData _outcome = Icons.question_mark;
   IconData _attempt = Icons.not_interested_outlined;
   final Random _random = Random(9527);
+  late Column mainColumn;
+  late Center mainBody;
+  late List<Column> taskList;
+  late Row countRow;
+  late Row outcomeRow;
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize _counter here
+    countRow = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      const Text(
+        'Count:',
+        style: uniformStyle,
+      ),
+      Text(
+        '$_counter',
+        style: uniformStyle,
+      )
+    ]);
+    outcomeRow = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      const Text(
+        'Outcome:',
+        style: uniformStyle,
+      ),
+      Icon(_outcome)
+    ]);
+    taskList = <Column>[
+      Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [countRow]),
+      Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [outcomeRow]),
+    ];
+    mainColumn =
+        Column(mainAxisAlignment: MainAxisAlignment.center, children: taskList);
+  }
 
   void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
+      countRow = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Text(
+          'Count:',
+          style: uniformStyle,
+        ),
+        Text(
+          '$_counter',
+          style: uniformStyle,
+        )
+      ]);
+      setState(() {
+      });
+  }
+
+  void _tossCoin() {
+    // This call to setState tells the Flutter framework that something has
+    // changed in this State, which causes it to rerun the build method below
+    // so that the display can reflect the updated values. If we changed
+    // _counter without calling setState(), then the build method would not be
+    // called again, and so nothing would appear to happen.
+    // bool coinState = _random.nextBool();
+    bool outcome = _random.nextBool();
+    _outcome = outcome
+        ? Icons.turn_sharp_right_rounded
+        : Icons.turn_sharp_left_rounded;
+    outcomeRow = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      const Text(
+        'Outcome:',
+        style: uniformStyle,
+      ),
+      Icon(_outcome)
+    ]);
+    _incrementCounter();
+  }
+
+  void _addTask(String input) {
+    setState(() {
+      Column newTask = Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            CheckableTask(title: input)
+          ]);
+      taskList.add(newTask);
     });
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Congratulations'),
+          content: const Text('You have commit a task'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Close the pop-up window
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    Center _mainBody = Center(
-      // Center is a layout widget. It takes a single child and positions it
-      // in the middle of the parent.
-      child: Column(
-        // Column is also a layout widget. It takes a list of children and
-        // arranges them vertically. By default, it sizes itself to fit its
-        // children horizontally, and tries to be as tall as its parent.
-        //
-        // Column has various properties to control how it sizes itself and
-        // how it positions its children. Here we use mainAxisAlignment to
-        // center the children vertically; the main axis here is the vertical
-        // axis because Columns are vertical (the cross axis would be
-        // horizontal).
-        //
-        // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-        // action in the IDE, or press "p" in the console), to see the
-        // wireframe for each widget.
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text(
-                    'Count:',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  Text(
-                    '$_counter',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  )
-                ])
-              ]),
-          Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text(
-                    'Outcome:',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  Icon(_outcome)
-                ])
-              ]),
-        ],
-      ),
-    );
-
-    void _addTask(String input) {
-      Widget? taskList = _mainBody.child;
-    };
-
+    taskList[0] =
+      Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [countRow]);
+    taskList[1] =
+      Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [outcomeRow]);
     return Scaffold(
         appBar: AppBar(
           // TRY THIS: Try changing the color here to a specific color (to
@@ -147,7 +237,12 @@ class _MyHomePageState extends State<MyHomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body: _mainBody,
+        body: Center(
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, children: taskList),
+        ),
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -176,21 +271,5 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           onSubmitted: _addTask,
         ));
-  }
-
-  void _tossCoin() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      // bool coinState = _random.nextBool();
-      bool outcome = _random.nextBool();
-      _outcome = outcome
-          ? Icons.turn_sharp_right_rounded
-          : Icons.turn_sharp_left_rounded;
-    });
-    _incrementCounter();
   }
 }
